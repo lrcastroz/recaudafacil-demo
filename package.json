@@ -1,0 +1,26 @@
+{
+  "name": "demo-totems",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Demo de sistema de recaudación de servicios básicos (Ecuador) para tótems de autoservicio",
+  "workspaces": [
+    "packages/shared",
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c blue,green \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w web",
+    "test": "npm run test -w packages/shared",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
+    "reset-db": "npm run reset-db -w server",
+    "start": "npm run start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=22.13"
+  }
+}

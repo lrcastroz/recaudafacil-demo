@@ -1,0 +1,15 @@
+# Blueprint de Render: un solo servicio web (API + Socket.IO + frontend compilado).
+# En Render: New > Blueprint > seleccionar este repositorio.
+services:
+  - type: web
+    name: recaudafacil-demo
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      # Plan gratuito: disco efímero; la base se regenera con datos de demo en cada despliegue o reinicio.
+      # Con un plan pago puede agregar un disco persistente y apuntar DB_PATH a él, ej. /var/data/totems.db
