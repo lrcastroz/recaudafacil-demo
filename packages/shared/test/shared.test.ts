@@ -6,6 +6,8 @@ import {
   cedulaCheckDigit,
   computeChange,
   computeTotals,
+  detectBrand,
+  requires3ds,
   formatMoneyPlain,
   luhnValid,
   maskName,
@@ -56,6 +58,28 @@ describe('identificación', () => {
 
   it('todas las tarjetas de prueba pasan Luhn', () => {
     for (const c of TEST_CARDS) expect(luhnValid(c.number), c.id).toBe(true);
+  });
+});
+
+describe('botón de pagos', () => {
+  it('detecta la marca por BIN', () => {
+    expect(detectBrand('4111111111111111')).toBe('VISA');
+    expect(detectBrand('5555555555554444')).toBe('MASTERCARD');
+    expect(detectBrand('2221000000000009')).toBe('MASTERCARD');
+    expect(detectBrand('378282246310005')).toBe('AMEX');
+    expect(detectBrand('36000000000008')).toBe('DINERS');
+    expect(detectBrand('6011111111111117')).toBe('DISCOVER');
+    expect(detectBrand('9999')).toBeNull();
+  });
+
+  it('exige 3-D Secure sólo a Mastercard y Amex', () => {
+    expect(requires3ds('MASTERCARD')).toBe(true);
+    expect(requires3ds('AMEX')).toBe(true);
+    expect(requires3ds('VISA')).toBe(false);
+  });
+
+  it('todas las tarjetas de prueba tienen marca detectable', () => {
+    for (const c of TEST_CARDS) expect(detectBrand(c.number), c.id).toBe(c.brand);
   });
 });
 

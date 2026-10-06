@@ -26,6 +26,7 @@ export interface TotemRow {
   emission_point: string;
   paper_level: number;
   receipt_seq: number;
+  channel: 'TOTEM' | 'WEB';
 }
 
 export function getTotem(id: string): TotemRow | undefined {

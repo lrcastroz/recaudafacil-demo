@@ -4,7 +4,7 @@
  *   npx tsx scripts/smoke.ts
  */
 import { io, type Socket } from 'socket.io-client';
-import type { ClientToServerEvents, ServerToClientEvents, TxFinished } from '@totem/shared';
+import { TEST_CARDS, type ClientToServerEvents, type ServerToClientEvents, type TxFinished } from '@totem/shared';
 
 const BASE = process.env.BASE ?? 'http://localhost:4000';
 const TOTEM = 'TOT-003';
@@ -163,6 +163,46 @@ async function main() {
     const f = await done;
     check(f.outcome === 'reversed' && f.transaction.status === 'REVERSADA', `estado ${f.transaction.status}`);
     s.emit('sim:faults', { totemId: TOTEM, faults: { billerDown: false } });
+  }
+
+  // ---------- Botón de pagos (portal web) ----------
+  const webCheckout = async (billerCode: string, idx: number) => {
+    const { accounts } = await api<{ accounts: { billerCode: string; identifier: string; pending: number; note: string }[] }>('/api/demo-data');
+    const acc = accounts.filter((a) => a.billerCode === billerCode && a.pending > 0 && a.note.includes('pendiente'))[idx];
+    const inq = await api<{ invoices: { id: number }[] }>('/api/inquiry', { totemId: 'WEB-001', billerCode, identifier: acc.identifier });
+    return api<{ sessionId: string; txId: string }>('/api/web/checkout', {
+      billerCode,
+      identifier: acc.identifier,
+      invoiceIds: [inq.invoices[0].id],
+      billing: { type: 'CONSUMIDOR_FINAL', id: '', name: '', email: 'cliente@correo.ec' },
+    });
+  };
+  const card = (number: string, cvv = '123') => ({ number, holder: 'CLIENTE PRUEBA', expMonth: '12', expYear: '30', cvv });
+
+  console.log('7) Botón de pagos: Visa aprobada sin desafío 3DS');
+  {
+    const co = await webCheckout('ETAPA_AGUA', 1);
+    const r = await api<{ status: string; redirectUrl?: string }>(`/api/gateway/sessions/${co.sessionId}/pay`, card('4111111111111111'));
+    const tx = await api<{ status: string; card: { entry: string } }>(`/api/transactions/${co.txId}`);
+    check(r.status === 'approved' && tx.status === 'PAGADA' && tx.card.entry === 'ecommerce', `pagada (${r.status}, ${tx.status})`);
+  }
+
+  console.log('8) Botón de pagos: Mastercard con 3DS (OTP incorrecto y luego correcto)');
+  {
+    const co = await webCheckout('ETAPA_TEL', 2);
+    const r1 = await api<{ status: string }>(`/api/gateway/sessions/${co.sessionId}/pay`, card('5555555555554444'));
+    const r2 = await api<{ status: string; error?: string }>(`/api/gateway/sessions/${co.sessionId}/3ds`, { otp: '000000' });
+    const r3 = await api<{ status: string }>(`/api/gateway/sessions/${co.sessionId}/3ds`, { otp: '123456' });
+    check(r1.status === 'challenge' && r2.error === 'Código incorrecto' && r3.status === 'approved', `${r1.status} → ${r2.error} → ${r3.status}`);
+  }
+
+  console.log('9) Botón de pagos: fondos insuficientes y luego cancelación');
+  {
+    const co = await webCheckout('CENTROSUR', 3);
+    const r = await api<{ status: string; code: string; attemptsLeft: number }>(`/api/gateway/sessions/${co.sessionId}/pay`, card(TEST_CARDS.find((c) => c.id === 'visa-51')!.number));
+    await api(`/api/gateway/sessions/${co.sessionId}/cancel`, {});
+    const tx = await api<{ status: string }>(`/api/transactions/${co.txId}`);
+    check(r.status === 'declined' && r.code === '51' && r.attemptsLeft === 2 && tx.status === 'CANCELADA', `${r.status} ${r.code}, quedan ${r.attemptsLeft}; luego ${tx.status}`);
   }
 
   s.emit('sim:fastMode', { totemId: TOTEM, enabled: false });

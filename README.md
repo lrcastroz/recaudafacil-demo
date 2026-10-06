@@ -23,6 +23,7 @@ Abra http://localhost:5173. La base SQLite (`server/data/totems.db`) se crea con
 | `/kiosk?mode=frame&totem=TOT-001` | Tótem completo con periféricos interactivos (presentación en laptop o proyector) |
 | `/kiosk?mode=kiosk&totem=TOT-001` | Sólo la pantalla táctil, a pantalla completa (monitor táctil vertical, F11) |
 | `/simulator?totem=TOT-001` | Panel del presentador: periféricos físicos e inyección de fallas desde otro dispositivo |
+| `/pagos` | Portal web de pagos en línea con **botón de pagos** simulado (pasarela ficticia "PagoSeguro" con 3-D Secure) |
 | `/admin` | Consola de recaudación (usuario `admin`, contraseña `admin123`) |
 
 Tótems disponibles, todos en Cuenca: `TOT-001` (C.C. Río Tomebamba), `TOT-002` (Centro Histórico), `TOT-003` (El Arenal). Para agregar otra empresa o ciudad, edite `BILLERS` y `ACCOUNTS` en `server/src/seed.ts` y ejecute `npm run reset-db`; si un servicio tiene más de una empresa, el tótem muestra automáticamente la pantalla de selección. Vite escucha en la red local, así que el simulador se puede abrir desde una tablet con la IP del equipo.
@@ -33,7 +34,7 @@ Tótems disponibles, todos en Cuenca: `TOT-001` (C.C. Río Tomebamba), `TOT-002`
 |---|---|
 | `npm run dev` | Servidor (puerto 4000) y frontend (puerto 5173) |
 | `npm test` | Pruebas unitarias (dinero, cédula/RUC, vuelto, clave de acceso SRI) |
-| `npm run smoke -w server` | Prueba end-to-end por Socket.IO contra el servidor en ejecución (6 escenarios) |
+| `npm run smoke -w server` | Prueba end-to-end contra el servidor en ejecución: 6 escenarios del tótem y 3 del botón de pagos |
 | `npm run typecheck` | Chequeo de tipos de servidor y frontend |
 | `npm run reset-db` | Borra la base de datos; se regenera al iniciar |
 
@@ -82,6 +83,11 @@ La pantalla del tótem **no simula hardware**: envía comandos (`cash:start`, `c
 - Vuelto con inventario real del hopper y del reciclador (greedy y búsqueda de respaldo). Si el dispensador se atasca, lo no entregado queda como saldo a favor.
 - Tarjeta: chip con PIN, contactless sin PIN hasta $50, banda rechazada para tarjetas con chip (regla EMV), 3 intentos de PIN, códigos ISO 8583 y reverso automático si la empresa no confirma.
 - Cancelación o abandono (timeout, reinicio de la pantalla) devuelve el dinero ingresado.
+- Botón de pagos (portal web, canal `WEB-001`):
+  - El comercio crea una sesión de pago que expira en 15 minutos y redirige a la pasarela. La pasarela valida la tarjeta (Luhn, marca por BIN, vencimiento, CVV de 3 o 4 dígitos).
+  - Mastercard y Amex exigen desafío 3-D Secure (OTP `123456`).
+  - Se permiten 3 intentos antes de rechazar la sesión. El cliente puede cancelar y volver al comercio, y hay protección contra doble cobro.
+  - El comprobante y la factura se registran igual que en el tótem.
 - Consola: dashboard, transacciones con detalle y reverso manual, inventario por denominación, carga de cambio, reposición de papel, cierre de caja y configuración.
 
 Guion paso a paso y cuentas de prueba: [docs/guion-demo.md](docs/guion-demo.md).

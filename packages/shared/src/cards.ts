@@ -1,7 +1,27 @@
 import { luhnComplete } from './identity';
 
 export type CardBrand = 'VISA' | 'MASTERCARD' | 'DINERS' | 'AMEX' | 'DISCOVER';
-export type CardEntry = 'chip' | 'contactless' | 'swipe';
+/** Modo de lectura: presencial en el PIN pad, o 'ecommerce' desde el botón de pagos web */
+export type CardEntry = 'chip' | 'contactless' | 'swipe' | 'ecommerce';
+
+/** Código OTP de prueba para la verificación 3-D Secure del botón de pagos */
+export const TEST_OTP = '123456';
+
+/** Detección de marca por prefijo (BIN). */
+export function detectBrand(num: string): CardBrand | null {
+  const n = num.replace(/\D/g, '');
+  if (/^4/.test(n)) return 'VISA';
+  if (/^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/.test(n)) return 'MASTERCARD';
+  if (/^3[47]/.test(n)) return 'AMEX';
+  if (/^3(0[0-5]|[68])/.test(n)) return 'DINERS';
+  if (/^(6011|65|64[4-9])/.test(n)) return 'DISCOVER';
+  return null;
+}
+
+/** Marcas que en el simulador exigen desafío 3-D Secure (Mastercard Identity Check, Amex SafeKey). */
+export function requires3ds(brand: CardBrand): boolean {
+  return brand === 'MASTERCARD' || brand === 'AMEX';
+}
 
 export interface TestCard {
   id: string;

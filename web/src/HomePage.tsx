@@ -23,6 +23,13 @@ const ENTRIES = [
     cta: 'Abrir simulador',
   },
   {
+    to: '/pagos',
+    icon: '🌐',
+    title: 'Pagos en línea (botón de pagos)',
+    desc: 'Portal web para pagar los mismos servicios desde el celular o la computadora, con redirección a una pasarela simulada: tarjeta, 3-D Secure y retorno al comercio.',
+    cta: 'Abrir portal de pagos',
+  },
+  {
     to: '/admin',
     icon: '📊',
     title: 'Panel administrador',

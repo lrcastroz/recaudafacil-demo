@@ -52,6 +52,7 @@ export function Transactions() {
           <option>TOT-001</option>
           <option>TOT-002</option>
           <option>TOT-003</option>
+          <option value="WEB-001">WEB-001 (web)</option>
         </select>
         <select value={filters.service} onChange={set('service')} className={inputCls}>
           <option value="">Servicio</option>

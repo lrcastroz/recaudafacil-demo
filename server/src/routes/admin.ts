@@ -122,7 +122,7 @@ export function adminRoutes(hub: TotemHub) {
   r.get('/totems', (_req, res) => {
     const day = ecToday();
     res.json(
-      listTotems().map((t) => {
+      listTotems().filter((t) => t.channel === 'TOTEM').map((t) => {
         const c = hub.get(t.id)!;
         const todayStats = get<{ total: number; count: number }>(
           `SELECT COALESCE(SUM(total),0) total, COUNT(*) count FROM transactions WHERE totem_id = ? AND status = 'PAGADA' AND date(created_at, ${EC}) = ?`,

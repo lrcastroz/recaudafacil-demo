@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS totems (
   establishment TEXT NOT NULL,
   emission_point TEXT NOT NULL,
   paper_level INTEGER NOT NULL DEFAULT 100,
-  receipt_seq INTEGER NOT NULL DEFAULT 0
+  receipt_seq INTEGER NOT NULL DEFAULT 0,
+  channel TEXT NOT NULL DEFAULT 'TOTEM' -- TOTEM | WEB
 );
 
 CREATE TABLE IF NOT EXISTS cash_inventory (
@@ -152,6 +153,18 @@ CREATE TABLE IF NOT EXISTS cash_closures (
   detail TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS gateway_sessions (
+  id TEXT PRIMARY KEY,
+  tx_id TEXT NOT NULL REFERENCES transactions(id),
+  amount INTEGER NOT NULL,
+  description TEXT NOT NULL,
+  status TEXT NOT NULL, -- PENDIENTE | APROBADA | RECHAZADA | CANCELADA | EXPIRADA
+  attempts INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS events_log (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   totem_id TEXT NOT NULL,
@@ -161,6 +174,12 @@ CREATE TABLE IF NOT EXISTS events_log (
   created_at TEXT NOT NULL
 );
 `);
+
+// Migración para bases creadas antes de existir el canal web
+const totemCols = db.prepare('PRAGMA table_info(totems)').all() as { name: string }[];
+if (!totemCols.some((c) => c.name === 'channel')) {
+  db.exec("ALTER TABLE totems ADD COLUMN channel TEXT NOT NULL DEFAULT 'TOTEM'");
+}
 
 export function nowIso(): string {
   return new Date().toISOString();

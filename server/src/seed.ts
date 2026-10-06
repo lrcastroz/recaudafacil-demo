@@ -244,6 +244,25 @@ export const TOTEMS = [
   { id: 'TOT-003', name: 'Tótem C.C. El Arenal', city: 'Cuenca', location: 'Mercado El Arenal, Av. de las Américas, Cuenca', establishment: '003', emissionPoint: '301' },
 ];
 
+/** Canal virtual para los pagos hechos desde el portal web con botón de pagos. */
+export const WEB_CHANNEL = {
+  id: 'WEB-001',
+  name: 'Portal web RecaudaFácil',
+  city: 'En línea',
+  location: 'Pagos en línea con botón de pagos',
+  establishment: '004',
+  emissionPoint: '401',
+};
+
+/** Registra el canal web si no existe (también en bases creadas antes de esta función). */
+export function ensureWebChannel() {
+  run(
+    `INSERT OR IGNORE INTO totems(id, name, city, location, establishment, emission_point, paper_level, receipt_seq, channel)
+     VALUES (?,?,?,?,?,?,100,0,'WEB')`,
+    WEB_CHANNEL.id, WEB_CHANNEL.name, WEB_CHANNEL.city, WEB_CHANNEL.location, WEB_CHANNEL.establishment, WEB_CHANNEL.emissionPoint,
+  );
+}
+
 export function seedIfEmpty() {
   const existing = get<{ n: number }>('SELECT COUNT(*) AS n FROM billers');
   if (existing && existing.n > 0) return false;

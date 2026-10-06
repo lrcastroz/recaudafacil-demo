@@ -9,12 +9,15 @@ import type { Ack, ClientToServerEvents, ServerToClientEvents } from '@totem/sha
 import { BillerError } from './billers';
 import { adminRoutes } from './routes/admin';
 import { kioskRoutes } from './routes/kiosk';
-import { seedIfEmpty } from './seed';
+import { ensureWebChannel, seedIfEmpty } from './seed';
+import { onGatewayChange } from './gateway';
+import { webRoutes } from './routes/web';
 import { TotemHub } from './totem/hub';
 
 const PORT = Number(process.env.PORT ?? 4000);
 
 if (seedIfEmpty()) console.log('[db] Base de datos inicializada con datos de demo');
+ensureWebChannel();
 
 const app = express();
 app.use(cors());
@@ -43,6 +46,8 @@ const asyncSafe = (router: express.Router) => {
 };
 
 app.use('/api', asyncSafe(kioskRoutes(hub)));
+app.use('/api', asyncSafe(webRoutes()));
+onGatewayChange((reason) => io.to('admin').emit('admin:changed', { totemId: 'WEB-001', reason }));
 app.use('/api/admin', asyncSafe(adminRoutes(hub)));
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

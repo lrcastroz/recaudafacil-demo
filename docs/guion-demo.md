@@ -29,6 +29,20 @@ En el modo marco, todo objeto de la billetera (monedas, billetes, tarjetas y pla
 4. Retire la tarjeta (botón **RETIRAR** del lector) para continuar.
 5. Variante sin PIN: con un monto menor a $50, use **Acercar** (contactless).
 
+## 2b. Pago en línea con botón de pagos (≈3 min)
+
+1. Abra `/pagos` (también desde el celular). Elija **Agua → EPMAPA-SD**, abra **Cuentas de prueba** y elija `2290365`.
+2. Revise las planillas → **Continuar** → **Consumidor final**, ingrese un correo, acepte los términos y pulse **Pagar … con tarjeta**.
+3. Se abre la pasarela **PagoSeguro**: el comercio no ve los datos de la tarjeta. Muestre el resumen, el tiempo de expiración y la vista previa de la tarjeta con detección de marca.
+4. En **Tarjetas de prueba** elija la Mastercard •••• 4444 y pulse **Pagar**. Aparece la verificación 3-D Secure del banco: ingrese `123456`. Un código incorrecto permite reintentar.
+5. Pago aprobado: la pasarela regresa al comercio con el comprobante, el PDF y la factura enviada al correo.
+6. Variantes:
+   - Visa •••• 1111: aprobada sin 3-D Secure.
+   - Visa •••• 0002: fondos insuficientes; puede reintentar con otra tarjeta (máximo 3 intentos).
+   - Una fecha vencida se rechaza con código 54.
+   - **Cancelar y volver al comercio**: muestra la transacción cancelada.
+7. En `/admin` filtre por **WEB-001 · Portal web** para ver estos pagos junto a los de los tótems.
+
 ## 3. Manejo de errores (≈4 min)
 
 | Escenario | Cómo provocarlo | Qué se observa |

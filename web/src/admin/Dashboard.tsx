@@ -52,6 +52,7 @@ export function Dashboard() {
           <option value="TOT-001">TOT-001 · C.C. Río Tomebamba</option>
           <option value="TOT-002">TOT-002 · Centro Histórico</option>
           <option value="TOT-003">TOT-003 · El Arenal</option>
+          <option value="WEB-001">WEB-001 · Portal web</option>
         </select>
         <input type="date" value={day} max={ecToday()} onChange={(e) => setDay(e.target.value)} className={inputCls} />
       </PageTitle>

@@ -52,7 +52,7 @@ function ecDate(iso: string) {
   });
 }
 
-const ENTRY_LABEL = { chip: 'CHIP', contactless: 'SIN CONTACTO', swipe: 'BANDA' } as const;
+const ENTRY_LABEL = { chip: 'CHIP', contactless: 'SIN CONTACTO', swipe: 'BANDA', ecommerce: 'BOTÓN DE PAGOS' } as const;
 
 export function buildReceiptText(s: TransactionSummary, totem: TotemRow, settings: PublicSettings): string {
   const L: string[] = [];
@@ -62,11 +62,11 @@ export function buildReceiptText(s: TransactionSummary, totem: TotemRow, setting
   L.push(center(totem.name));
   L.push(center(totem.city.toUpperCase()));
   L.push(line('='));
-  L.push(center('COMPROBANTE DE PAGO'));
+  L.push(center(totem.channel === 'WEB' ? 'COMPROBANTE DE PAGO EN LÍNEA' : 'COMPROBANTE DE PAGO'));
   L.push(line('='));
   L.push(lr('Fecha:', ecDate(s.updatedAt)));
   L.push(lr('Transacción:', s.id));
-  L.push(lr('Tótem:', s.totemId));
+  L.push(lr(totem.channel === 'WEB' ? 'Canal:' : 'Tótem:', s.totemId));
   L.push(line());
   L.push(`Servicio: ${SERVICE_LABELS[s.service]}`);
   L.push(wrap(`Empresa: ${s.billerName}`));
