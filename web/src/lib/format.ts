@@ -36,6 +36,7 @@ export function ecTime(iso: string): string {
 
 /** Código de barras de la planilla: "EMPRESA|identificador" */
 export function parsePlanillaBarcode(code: string): { billerCode: string; identifier: string } | null {
-  const m = /^([A-Z_]+)\|(\d+)$/.exec(code.trim());
+  // El código de empresa puede incluir dígitos (ej. YIGA5)
+  const m = /^([A-Z][A-Z0-9_]*)\|(\d+)$/.exec(code.trim());
   return m ? { billerCode: m[1], identifier: m[2] } : null;
 }
